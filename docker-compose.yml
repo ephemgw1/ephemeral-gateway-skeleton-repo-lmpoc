@@ -1,0 +1,60 @@
+# Copyright (c) 2018 CA. All rights reserved.
+# This software may be modified and distributed under the terms
+# of the MIT license.  See the LICENSE file for details.
+
+version: '3.4'
+services:
+  gateway-dev:
+    hostname: gateway.<yourDomain>
+    image: caapim/gateway:9.4.00
+    ports:
+    - "8081:8080"
+    - "8444:8443"
+    - "8000:8000"
+    volumes:
+    - /opt/SecureSpan/Gateway/node/default/etc/bootstrap/services/restman
+    - ./deployment/build/gateway/deployment-1.0.0.gw7:/opt/docker/rc.d/deployment.gw7
+    #- ./AWS-SK/src/main/gateway/config/global-env.properties:/opt/SecureSpan/Gateway/node/default/etc/bootstrap/env/global-env.properties
+    - ./Enterprise/src/main/gateway/config/global-env.properties:/opt/SecureSpan/Gateway/node/default/etc/bootstrap/env/global-env.properties
+    - ./Enterprise/src/main/gateway/config/privateKeys:/opt/SecureSpan/Gateway/node/default/etc/bootstrap/env/config/privateKeys
+    #- ./Enterprise/src/main/gateway/config/certificates:/opt/SecureSpan/Gateway/node/default/etc/bootstrap/certificates
+    secrets:
+    - source: license
+      target: /opt/SecureSpan/Gateway/node/default/etc/bootstrap/license/license.xml
+    environment:
+      ACCEPT_LICENSE: "true"
+      SSG_ADMIN_USERNAME: "admin"
+      SSG_ADMIN_PASSWORD: "7layer"
+      ENV.PRIVATE_KEY.ssl: '{ "keystore": "Generic", "algorithm": "RSA", "keyPassword": "7layer" }'
+      ENV.CERTIFICATE.<yourCertificate>: '{
+                      "verifyHostname" : false,
+                      "trustedForSsl" : true,
+                      "trustedAsSamlAttestingEntity" : true,
+                      "trustAnchor" : true,
+                      "revocationCheckingEnabled" : true,
+                      "trustedForSigningClientCerts" : true,
+                      "trustedForSigningServerCerts" : true,
+                      "trustedAsSamlIssuer" : true
+                      }'
+      ENV.CERTIFICATE_FILE.<yourCertFile>.pem: |-
+                        Bag Attributes
+                            friendlyName: ssl
+                            localKeyID: F5 E0 AA F5 5E 37 CE 56 19 6B 88 70 EB 06 C7 F7 01 9A 4C 9B 
+                        subject=/CN=gateway.<yourDomain>
+                        issuer=/CN=gateway.<yourDomain>
+                        -----BEGIN CERTIFICATE-----
+                        MIIDFTCCAf2gAwIBAgIJAPz1pWckwb6YMA0GCSqGSIb3DQEBDAUAMCgxJjAkBgNV
+                        BAMTHWVrc2d3LmVrcy5sYXllcjcuYnJvYWRjb20uY29tMB4XDTE5MDkyNDE4NDgw
+                        NFoXDTI5MDkyMTE4NDgwNFowKDEmMCQGA1UEAxMdZWtzZ3cuZWtzLmxheWVyNy5i
+                        cm9hZGNvbS5jb20wggEiMA0GCSqGSIb3DQEBAQUAA4IBDwAwggEKAoIBAQCidr1U
+                        pHI3+0UM7SkBInmXlfC1Y+HQcc8EQWM5P528tAeiEa4+GrpkiISMGDJ4kotd5T9S
+                        9D4XXgGpS2Tj+P2HoQLb4rPmr3YgtZWJbDFRSd96eEMNGNrRS+AP3eyUFE1hGdU/
+                        U7DYm+945cwxF4RWtHh0sSLjJZfGJ1NvRvGBysUlum2Z27NHR8pKepvvjbmj+erx
+                        ReimWvxQanGnlwFjCO3DZIKE4FRCbvJlJjfVDc9mTg2bfy1ztqSJiNgXQXBIz04K
+                        8OsntEmTdlc2QkIxWtoB0b5N0VXfQ9J9eJ2ItYwOfeFte2eyLys/sL9SYCdR4ItI
+                        Example ---- Example ---- Example ----- Example  ------  Example
+                        -----END CERTIFICATE-----
+
+secrets:
+  license:
+    file: ./docker/license.xml
